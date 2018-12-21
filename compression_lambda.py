@@ -8,8 +8,11 @@ def strip_extension(path):
 
 
 def lambda_handler(event, context):
+    first_record = event["Records"][0]
+    name_of_audio_file_on_s3bucket = str(first_record['s3']['object']['key'])
+
     name_of_bucket_with_songs = os.environ['name_of_bucket_with_songs']
-    name_of_audio_file_on_s3bucket = event['audio']
+    name_of_bucket_with_output = os.environ['name_of_bucket_with_output']
 
     s3 = boto3.resource('s3')
     s3.Bucket(name_of_bucket_with_songs).download_file(
@@ -24,4 +27,4 @@ def lambda_handler(event, context):
     subprocess.call(['/tmp/ffmpeg -y -i /tmp/{0} -ab 320k {1} </dev/null'
                     .format(name_of_audio_file_on_s3bucket, mp3_output_path)], shell=True)
 
-    s3.Bucket(name_of_bucket_with_songs).upload_file(mp3_output_path, mp3_relative_path)
+    s3.Bucket(name_of_bucket_with_output).upload_file(mp3_output_path, mp3_relative_path)
